@@ -18,6 +18,7 @@ class RetryTest extends FlatSpec {
   }
 
   //Risk of failure
+  //Any Ideas hot to test this better?
   "A RetryImpl" should "return result of block code with retries" in {
     val retryImpl = new RetryImpl
     val intGenerator = () => Random.nextInt(2)
