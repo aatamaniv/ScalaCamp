@@ -19,7 +19,8 @@ class RetryImpl extends Retry {
       case head :: Nil =>
         sleepFor(head.toMillis)
         retry(block, acceptResult, Nil)
-      case head :: tail => sleepFor(head.toMillis)
+      case head :: tail =>
+        sleepFor(head.toMillis)
         retry(block, acceptResult, tail)
       case Nil => throw new Throwable("Cannot retry any more")
     }
