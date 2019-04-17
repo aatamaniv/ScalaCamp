@@ -8,14 +8,14 @@ object RetryImpl {
   @tailrec
   final def retry[A](block: () => A, acceptResult: A => Boolean, retries: List[FiniteDuration]): A = {
     val result = block()
-
-    if (acceptResult(result))
-      result
-    else retries match {
-      case head :: tail =>
-        sleepFor(head.toMillis)
-        retry(block, acceptResult, tail)
-      case Nil => result
+    Some(result).find(acceptResult) match {
+      case Some(correctResult) => correctResult
+      case _ => retries match {
+        case Nil => result
+        case head :: tail =>
+          sleepFor(head.toMillis)
+          retry(block, acceptResult, tail)
+      }
     }
   }
 
