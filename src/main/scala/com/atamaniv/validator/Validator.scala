@@ -25,15 +25,11 @@ trait Validator[T] {
     val that = this
     new Validator[T] {
       override def validate(value: T) = {
-        that.validate(value) match {
-          case Left(firstLeft) => other.validate(value) match {
-            case Left(second) => Left(s"$firstLeft $second")
-            case Right(_) => Left(firstLeft)
-          }
-          case Right(_) => other.validate(value) match {
-            case Left(second) => Left(s"$second")
-            case Right(right) => Right(right)
-          }
+        (that.validate(value), other.validate(value)) match {
+          case (Right(thisValue), Right(_)) => Right(thisValue)
+          case (Right(_), Left(leftMessage)) => Left(leftMessage)
+          case (Left(leftMessage), Right(_)) => Left(leftMessage)
+          case (Left(thisLeftMessage), Left(otherLeftMessage)) => Left(s"$thisLeftMessage $otherLeftMessage")
         }
       }
     }
@@ -50,14 +46,10 @@ trait Validator[T] {
     val that = this
     new Validator[T] {
       override def validate(value: T) = {
-        that.validate(value) match {
-          case Right(first) => Right(first)
-          case Left(firstLeft) => other.validate(value) match {
-            case Right(first) => Right(first)
-            case Left(secondLeft) => Left(s"$firstLeft $secondLeft")
-          }
+        (that.validate(value), other.validate(value)) match {
+          case (Right(_), Right(_)) | (Right(_), Left(_)) | (Left(_), Right(_)) => Right(value)
+          case (Left(thisLeftMessage), Left(otherLeftMessage)) => Left(s"$thisLeftMessage $otherLeftMessage")
         }
-
       }
     }
   }
