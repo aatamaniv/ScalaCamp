@@ -57,8 +57,7 @@ trait Validator[T] {
 
 object Validator {
 
-  import ValidApp.IntValidator
-  import ValidApp.StringValidator
+  import ValidApp.AnyValidator
 
   def positiveInt: Validator[Int] = new Validator[Int] {
     override def validate(t: Int): Either[String, Int] = {
@@ -100,21 +99,9 @@ object ValidApp {
 
   import Validator._
 
-  implicit class IntValidator(n: Int) {
-    def validate(validator: Validator[Int]): Either[String, Int] = {
-      validator.validate(n)
-    }
-  }
-
-  implicit class StringValidator(s: String) {
-    def validate(validator: Validator[String]): Either[String, String] = {
-      validator.validate(s)
-    }
-  }
-
-  implicit class PersonValidator(p: Person) {
-    def validate(validator: Validator[Person]): Either[String, Person] = {
-      validator.validate(p)
+  implicit class AnyValidator[T](t: T) {
+    def validate(implicit validator: Validator[T]): Either[String, T] = {
+      validator.validate(t)
     }
   }
 
