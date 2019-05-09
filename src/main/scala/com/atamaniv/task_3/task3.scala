@@ -1,6 +1,6 @@
 package com.atamaniv.task_3
 
-import cats.Monad
+import cats.{Id, Monad}
 
 /**
   * Repository and Service implementation using tagless final pattern.
@@ -11,6 +11,7 @@ import cats.Monad
   */
 
 case class User(id: Long, username: String)
+
 case class IotDevice(id: Long, userId: Long, sn: String)
 
 // NOTE: This import bring into the scope implicits that allow you to call .map and .flatMap on the type F[_]
@@ -19,14 +20,19 @@ import cats.implicits._
 
 trait UserRepository[F[_]] {
   def registerUser(username: String): F[User]
+
   def getById(id: Long): F[Option[User]]
+
   def getByUsername(username: String): F[Option[User]]
 }
 
 trait IotDeviceRepository[F[_]] {
   def registerDevice(userId: Long, serialNumber: String): F[IotDevice]
+
   def getById(id: Long): F[Option[IotDevice]]
+
   def getBySn(sn: String): F[Option[IotDevice]]
+
   def getByUser(userId: Long): F[Seq[IotDevice]]
 }
 
@@ -48,6 +54,7 @@ class UserService[F[_]](repository: UserRepository[F])
   }
 
   def getByUsername(username: String): F[Option[String]] = ???
+
   def getById(id: Long): F[Option[String]] = ???
 }
 
@@ -57,6 +64,43 @@ class IotDeviceService[F[_]](repository: IotDeviceRepository[F],
 
   // the register should fail with Left if the user doesn't exist or the sn already exists.
   def registerDevice(userId: Long, sn: String): F[Either[String, User]] = ???
+}
+
+class UserRepositoryInMemory extends UserRepository[Id] {
+  private var users: Map[Long, User] = Map()
+  private var lastId: Long = 0L
+
+  override def registerUser(username: String): Id[User] = {
+    val id = lastId + 1
+    lastId = id
+    val user = User(id, username)
+    users = users + (user.id -> user)
+    user
+  }
+
+  override def getById(id: Long): Id[Option[User]] = users.get(id)
+
+  override def getByUsername(username: String): Id[Option[User]] = users.values.find(_.username == username)
+
+}
+
+class IotDeviceRepositoryInMemory extends IotDeviceRepository[Id] {
+  private var devices: Map[Long, IotDevice] = Map()
+  private var lastId: Long = 0L
+
+  override def registerDevice(userId: Long, serialNumber: String): Id[IotDevice] = {
+    val id = lastId + 1
+    lastId = id
+    val device = IotDevice(id, userId, serialNumber)
+    devices = devices + (device.id -> device)
+    device
+  }
+
+  override def getById(id: Long): Id[Option[IotDevice]] = devices.get(id)
+
+  override def getBySn(sn: String): Id[Option[IotDevice]] = devices.values.find(_.sn == sn)
+
+  override def getByUser(userId: Long): Id[Seq[IotDevice]] = devices.values.filter(_.userId == userId).toList
 }
 
 // task1: implement in-memory Respository with Id monad.
