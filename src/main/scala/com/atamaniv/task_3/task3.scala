@@ -55,9 +55,9 @@ class UserService[F[_]](repository: UserRepository[F])
     })
   }
 
-  def getByUsername(username: String): F[Option[String]] = ???
+  def getByUsername(username: String): F[Option[User]] = repository.getByUsername(username)
 
-  def getById(id: Long): F[Option[String]] = ???
+  def getById(id: Long): F[Option[User]] = repository.getById(id)
 }
 
 class IotDeviceService[F[_]](repository: IotDeviceRepository[F],
@@ -65,7 +65,7 @@ class IotDeviceService[F[_]](repository: IotDeviceRepository[F],
                             (implicit monad: Monad[F]) {
 
   // the register should fail with Left if the user doesn't exist or the sn already exists.
-  def registerDevice(userId: Long, sn: String): F[Either[String, User]] = ???
+  def registerDevice(userId: Long, sn: String): F[Either[String, IotDevice]] = ???
 }
 
 /** *
@@ -163,6 +163,21 @@ class IotDeviceRepositoryFuture extends IotDeviceRepository[Future] {
   * TASK 2 End
   */
 
+/**
+  * Task 3 Start
+  * */
+
+
+object MonadApp extends App {
+  val userRepository = new UserRepositoryInMemory
+  val userService = new UserService[Id](userRepository)
+
+  val firstTime = userService.registerUser("User1")
+  val secondTime = userService.registerUser("User1")
+
+  assert(firstTime.isRight)
+  assert(secondTime.isLeft)
+}
 
 // task1: implement in-memory Respository with Id monad.
 // task2: implement in-memory Respository with Future monad
