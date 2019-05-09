@@ -2,6 +2,8 @@ package com.atamaniv.task_3
 
 import cats.{Id, Monad}
 
+import scala.concurrent.Future
+
 /**
   * Repository and Service implementation using tagless final pattern.
   * The idea is to make it easier to test our database layer, using Scala’s higher kinded types to abstract
@@ -66,6 +68,10 @@ class IotDeviceService[F[_]](repository: IotDeviceRepository[F],
   def registerDevice(userId: Long, sn: String): F[Either[String, User]] = ???
 }
 
+/** *
+  * TASK 1 Start
+  */
+
 class UserRepositoryInMemory extends UserRepository[Id] {
   private var users: Map[Long, User] = Map()
   private var lastId: Long = 0L
@@ -102,6 +108,61 @@ class IotDeviceRepositoryInMemory extends IotDeviceRepository[Id] {
 
   override def getByUser(userId: Long): Id[Seq[IotDevice]] = devices.values.filter(_.userId == userId).toList
 }
+
+/** *
+  * TASK 1 End
+  */
+
+
+/** *
+  * TASK 2 Start
+  */
+
+
+class UserRepositoryFuture extends UserRepository[Future] {
+  private var users: Map[Long, User] = Map()
+  private var lastId: Long = 0L
+
+  override def registerUser(username: String): Future[User] = {
+    Future.successful {
+      val id = lastId + 1
+      lastId = id
+      val user = User(id, username)
+      users = users + (user.id -> user)
+      user
+    }
+  }
+
+  override def getById(id: Long): Future[Option[User]] = Future.successful(users.get(id))
+
+  override def getByUsername(username: String): Future[Option[User]] = Future.successful(users.values.find(_.username == username))
+}
+
+class IotDeviceRepositoryFuture extends IotDeviceRepository[Future] {
+  private var devices: Map[Long, IotDevice] = Map()
+  private var lastId: Long = 0L
+
+  override def registerDevice(userId: Long, serialNumber: String): Future[IotDevice] = {
+    Future.successful {
+      val id = lastId + 1
+      lastId = id
+      val device = IotDevice(id, userId, serialNumber)
+      devices = devices + (device.id -> device)
+      device
+    }
+  }
+
+  override def getById(id: Long): Future[Option[IotDevice]] = Future.successful(devices.get(id))
+
+  override def getBySn(sn: String): Future[Option[IotDevice]] = Future.successful(devices.values.find(_.sn == sn))
+
+  override def getByUser(userId: Long): Future[Seq[IotDevice]] = Future.successful(devices.values.filter(_.userId == userId).toList)
+}
+
+/** *
+  * TASK 2 End
+  */
+
 
 // task1: implement in-memory Respository with Id monad.
 // task2: implement in-memory Respository with Future monad
