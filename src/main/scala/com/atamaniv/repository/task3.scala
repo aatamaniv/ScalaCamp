@@ -14,7 +14,7 @@ import scala.concurrent.Future
   * The similar task example https://github.com/LvivScalaClub/cats-playground/blob/master/src/main/scala/BookRepository.scala
   */
 
-case class User(id: Long, username: String)
+case class UserForTask3(id: Long, username: String)
 
 case class IotDevice(id: Long, userId: Long, sn: String)
 
@@ -23,11 +23,11 @@ case class IotDevice(id: Long, userId: Long, sn: String)
 import cats.implicits._
 
 trait UserRepository[F[_]] {
-  def registerUser(username: String): F[User]
+  def registerUser(username: String): F[UserForTask3]
 
-  def getById(id: Long): F[Option[User]]
+  def getById(id: Long): F[Option[UserForTask3]]
 
-  def getByUsername(username: String): F[Option[User]]
+  def getByUsername(username: String): F[Option[UserForTask3]]
 }
 
 trait IotDeviceRepository[F[_]] {
@@ -43,7 +43,7 @@ trait IotDeviceRepository[F[_]] {
 class UserService[F[_]](repository: UserRepository[F])
                        (implicit monad: Monad[F]) {
 
-  def registerUser(username: String): F[Either[String, User]] = {
+  def registerUser(username: String): F[Either[String, UserForTask3]] = {
     // .flatMap syntax works because of import cats.implicits._
     // so flatMap function is added to F[_] through implicit conversions
     // The implicit monad param knows how to flatmap and map over your F.
@@ -57,9 +57,9 @@ class UserService[F[_]](repository: UserRepository[F])
     })
   }
 
-  def getByUsername(username: String): F[Option[User]] = repository.getByUsername(username)
+  def getByUsername(username: String): F[Option[UserForTask3]] = repository.getByUsername(username)
 
-  def getById(id: Long): F[Option[User]] = repository.getById(id)
+  def getById(id: Long): F[Option[UserForTask3]] = repository.getById(id)
 }
 
 class IotDeviceService[F[_]](repository: IotDeviceRepository[F],
@@ -85,20 +85,20 @@ class IotDeviceService[F[_]](repository: IotDeviceRepository[F],
   */
 
 class UserRepositoryInMemory extends UserRepository[Id] {
-  private var users: Map[Long, User] = Map()
+  private var users: Map[Long, UserForTask3] = Map()
   private var lastId: Long = 0L
 
-  override def registerUser(username: String): Id[User] = {
+  override def registerUser(username: String): Id[UserForTask3] = {
     val id = lastId + 1
     lastId = id
-    val user = User(id, username)
+    val user = UserForTask3(id, username)
     users = users + (user.id -> user)
     user
   }
 
-  override def getById(id: Long): Id[Option[User]] = users.get(id)
+  override def getById(id: Long): Id[Option[UserForTask3]] = users.get(id)
 
-  override def getByUsername(username: String): Id[Option[User]] = users.values.find(_.username == username)
+  override def getByUsername(username: String): Id[Option[UserForTask3]] = users.values.find(_.username == username)
 
 }
 
