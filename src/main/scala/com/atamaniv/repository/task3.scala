@@ -1,4 +1,6 @@
-package com.atamaniv.task_3
+package com.atamaniv.repository
+
+import java.util.concurrent.atomic.AtomicLong
 
 import cats.{Id, Monad}
 
@@ -102,12 +104,10 @@ class UserRepositoryInMemory extends UserRepository[Id] {
 
 class IotDeviceRepositoryInMemory extends IotDeviceRepository[Id] {
   private var devices: Map[Long, IotDevice] = Map()
-  private var lastId: Long = 0L
+  private var lastId: AtomicLong = new AtomicLong(0L)
 
   override def registerDevice(userId: Long, serialNumber: String): Id[IotDevice] = {
-    val id = lastId + 1
-    lastId = id
-    val device = IotDevice(id, userId, serialNumber)
+    val device = IotDevice(lastId.addAndGet(1), userId, serialNumber)
     devices = devices + (device.id -> device)
     device
   }
@@ -128,25 +128,6 @@ class IotDeviceRepositoryInMemory extends IotDeviceRepository[Id] {
   * TASK 2 Start
   */
 
-
-class UserRepositoryFuture extends UserRepository[Future] {
-  private var users: Map[Long, User] = Map()
-  private var lastId: Long = 0L
-
-  override def registerUser(username: String): Future[User] = {
-    Future.successful {
-      val id = lastId + 1
-      lastId = id
-      val user = User(id, username)
-      users = users + (user.id -> user)
-      user
-    }
-  }
-
-  override def getById(id: Long): Future[Option[User]] = Future.successful(users.get(id))
-
-  override def getByUsername(username: String): Future[Option[User]] = Future.successful(users.values.find(_.username == username))
-}
 
 class IotDeviceRepositoryFuture extends IotDeviceRepository[Future] {
   private var devices: Map[Long, IotDevice] = Map()
