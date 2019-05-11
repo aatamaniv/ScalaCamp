@@ -63,9 +63,19 @@ class UserService[F[_]](repository: UserRepository[F])
 class IotDeviceService[F[_]](repository: IotDeviceRepository[F],
                              userRepository: UserRepository[F])
                             (implicit monad: Monad[F]) {
-
-  // the register should fail with Left if the user doesn't exist or the sn already exists.
-  def registerDevice(userId: Long, sn: String): F[Either[String, IotDevice]] = ???
+  def registerDevice(userId: Long, sn: String): F[Either[String, IotDevice]] = {
+    userRepository.getById(userId).flatMap({
+      case None =>
+        monad.pure(Left(s"User with id $userId does not exist"))
+      case Some(device) =>
+        repository
+          .getBySn(sn)
+          .flatMap({
+            case Some(_) => monad.pure(Left(s"Device with sn '$sn' is already registered, it has id: ${device.id}"))
+            case None => repository.registerDevice(userId, sn).map(Right(_))
+          })
+    })
+  }
 }
 
 /** *
@@ -165,7 +175,7 @@ class IotDeviceRepositoryFuture extends IotDeviceRepository[Future] {
 
 /**
   * Task 3 Start
-  * */
+  **/
 
 
 object MonadApp extends App {
