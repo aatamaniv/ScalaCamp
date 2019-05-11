@@ -9,6 +9,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "ScalaCamp",
     libraryDependencies ++= Seq(
-      scalaTest % Test
+      scalaTest % Test,
+      "org.typelevel" %% "cats-core" % "1.5.0-RC1"
     )
   )
