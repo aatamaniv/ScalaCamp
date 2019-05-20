@@ -1,6 +1,7 @@
 package com.atamaniv.application.rest
 
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import com.atamaniv.application.model.User
 import com.atamaniv.application.repository.UserRepositoryImpl
 
@@ -10,7 +11,7 @@ object UserResource {
 
   val repository = new UserRepositoryImpl
 
-  val routes =
+  val routes: Route =
     path("user") {
       get {
         parameters('id) { userId =>
