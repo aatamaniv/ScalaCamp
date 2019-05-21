@@ -21,11 +21,9 @@ class UserRepositoryImpl extends UserRepository[Future] {
     db.run(users += user)
   }
 
-  override def getById(id: Long): Future[Option[User]] = getUserById(id)
+  override def getById(id: Long): Future[Option[User]] =
+    db.run(users.filter(_.id === id).result.headOption)
 
   override def getByUserName(username: String): Future[Option[User]] =
     db.run(users.filter(_.username === username).result.headOption)
-
-  def getUserById(id: Long): Future[Option[User]] =
-    db.run(users.filter(_.id === id).result.headOption)
 }
