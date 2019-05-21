@@ -12,8 +12,10 @@ class UserRepositoryImpl extends UserRepository[Future] {
 
   val users = TableQuery[Users]
 
-  def createSchema =  db.run(users.schema.create)
-
+  val schema = users.schema
+  db.run(DBIO.seq(
+    schema.create
+  ))
 
   override def registerUser(user: User): Future[Int] = {
     db.run(users += user)

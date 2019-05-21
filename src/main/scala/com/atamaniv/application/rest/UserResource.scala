@@ -16,8 +16,8 @@ class UserResource extends Directives with JsonSupport {
       get {
         parameters('id) { userId =>
           val maybeUser: Future[Option[User]] = repository.getById(userId.toLong)
-          onComplete(maybeUser) { _ =>
-            complete(maybeUser)
+          onComplete(maybeUser) { user =>
+            complete(user)
           }
         }
       } ~
