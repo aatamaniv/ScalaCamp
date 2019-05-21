@@ -8,7 +8,7 @@ import scala.concurrent.Future
 
 class UserRepositoryImpl extends UserRepository[Future] {
 
-  val db = Database.forConfig("h2mem1")
+  val db = Database.forConfig("h2memUSERS")
 
   val users = TableQuery[Users]
 
@@ -28,12 +28,4 @@ class UserRepositoryImpl extends UserRepository[Future] {
 
   def getUserById(id: Long): Future[Option[User]] =
     db.run(users.filter(_.id === id).result.headOption)
-
-
-  def connectToDB(): Unit = {
-    val db = Database.forConfig("h2mem1")
-    try {
-      //TODO: do something here
-    } finally db.close
-  }
 }

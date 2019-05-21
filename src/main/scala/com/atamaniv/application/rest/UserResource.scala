@@ -23,6 +23,7 @@ class UserResource extends Directives with JsonSupport {
       } ~
         post {
           entity(as[User]) { user =>
+            println(s"creating user: $user")
             val saved: Future[Int] = repository.registerUser(user)
             onComplete(saved) { id =>
               complete(s"$id")
