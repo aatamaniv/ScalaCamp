@@ -1,13 +1,13 @@
 package com.atamaniv.application.rest
 
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.{Directives, Route}
 import com.atamaniv.application.model.User
 import com.atamaniv.application.repository.UserRepositoryImpl
 
 import scala.concurrent.Future
 
-object UserResource {
+class UserResource extends Directives with JsonSupport {
 
   val repository = new UserRepositoryImpl
 
@@ -20,11 +20,16 @@ object UserResource {
       } ~
         post {
           entity(as[User]) { user =>
-            val saved: Future[User] = repository.registerUser(user)
+            val saved: Future[Int] = repository.registerUser(user)
             onComplete(saved) { _ =>
               complete("user created")
             }
           }
         }
     }
+}
+
+
+object UserResource {
+  def apply(): UserResource = new UserResource()
 }
