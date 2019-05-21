@@ -15,14 +15,17 @@ class UserResource extends Directives with JsonSupport {
     path("user") {
       get {
         parameters('id) { userId =>
-          complete(s"Requested $userId")
+          val maybeUser: Future[Option[User]] = repository.getById(userId.toLong)
+          onComplete(maybeUser) { _ =>
+            complete(maybeUser)
+          }
         }
       } ~
         post {
           entity(as[User]) { user =>
             val saved: Future[Int] = repository.registerUser(user)
-            onComplete(saved) { _ =>
-              complete("user created")
+            onComplete(saved) { id =>
+              complete(s"$id")
             }
           }
         }
